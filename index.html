@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+
+    <title>Hello, world!</title>
+    <style>
+        .wrap-months-picker-horizontal {
+            position: relative;
+            margin-bottom: 16px;
+            width: 386px;
+            margin-left: 15px;
+        }
+
+        .wrap-months-picker-horizontal:after,
+        .wrap-months-picker-horizontal ul.months-picker-horizontal:after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+
+        .wrap-months-picker-horizontal ul.months-picker-horizontal {
+            list-style-type: none;
+            border: 1px solid #A3B9C1;
+            height: auto;
+            display: block;
+            padding: 0;
+            margin: 0;
+            border-radius: 4px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .wrap-months-picker-horizontal ul.months-picker-horizontal li {
+            display: block;
+            width: 32px;
+            height: 32px;
+            float: left;
+            overflow: hidden;
+            background: #ffffff;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            cursor: default;
+        }
+
+        .wrap-months-picker-horizontal ul.months-picker-horizontal li:first-child {
+            border-bottom-left-radius: 3px;
+            border-top-left-radius: 3px;
+            outline: none;
+            box-shadow: none;
+            overflow: hidden;
+        }
+
+        .wrap-months-picker-horizontal ul.months-picker-horizontal li:last-child {
+            border-bottom-right-radius: 3px;
+            border-top-right-radius: 3px;
+            outline: none;
+            box-shadow: none;
+            overflow: hidden;
+        }
+
+        .wrap-months-picker-horizontal ul.months-picker-horizontal li.active {
+            background-color: #2E5670;
+        }
+
+        .wrap-months-picker-horizontal ul.months-picker-horizontal li.active span {
+            color: #ffffff;
+        }
+
+        .wrap-months-picker-horizontal ul.months-picker-horizontal li span {
+            display: block;
+            cursor: pointer;
+            height: 100%;
+            line-height: 32px;
+            text-align: center;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            cursor: default;
+        }
+
+        .wrap-months-picker-horizontal ul.months-picker-horizontal li:not(:last-child) {
+            border-right: 1px solid #A3B9C1;
+        }
+
+        .wrap-months-picker-horizontal .triangle {
+            margin: 0;
+            width: 0;
+            height: 0;
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            border-bottom: 8px;
+            border-bottom-style: solid;
+            border-bottom-color: #2E5670;
+            cursor: move;
+            display: block;
+            position: absolute;
+        }
+        .wrap-months-picker-horizontal .triangle:after {
+            content: '';
+            top: 0;
+            background: transparent;
+            position: absolute;
+            width: 32px;
+            height: 25px;
+            left: -15px;
+        }
+    </style>
+</head>
+<body>
+<div style="margin-left: 50px">
+    <div class="wrap-months-picker-horizontal" id="wrap-months-picker">
+        <ul class="months-picker-horizontal" id="months-picker" start="4" end="7">
+            <li class="month-item" data-month="3">
+                <span>3</span>
+            </li>
+            <li class="month-item" data-month="4">
+                <span>4</span>
+            </li>
+            <li class="month-item" data-month="5">
+                <span>5</span>
+            </li>
+            <li class="month-item" data-month="6">
+                <span>6</span>
+            </li>
+            <li class="month-item" data-month="7">
+                <span>7</span>
+            </li>
+            <li class="month-item" data-month="8">
+                <span>8</span>
+            </li>
+            <li class="month-item" data-month="9">
+                <span>9</span>
+            </li>
+            <li class="month-item" data-month="10">
+                <span>10</span>
+            </li>
+            <li class="month-item" data-month="11">
+                <span>11</span>
+            </li>
+            <li class="month-item" data-month="12">
+                <span>12</span>
+            </li>
+            <li class="month-item" data-month="1">
+                <span>1</span>
+            </li>
+            <li class="month-item" data-month="2">
+                <span>2</span>
+            </li>
+        </ul>
+        <span class="triangle-prev triangle" style="left: -4px">
+                    </span>
+        <span class="triangle-next triangle" style="left: 26px">
+                    </span>
+
+    </div>
+</div>
+<hr>
+<br>
+<br>
+<input type="text" value="" name="start-month" id="input-start-month">
+<input type="text" value="" name="end-month" id="input-end-month">
+
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+<script>
+    /*START FUNCTION*/
+    var MonthPicker = (function () {
+        //private; library can read it but public Init can't
+        var picker = document.querySelector('#months-picker');
+        var parentEl = document.querySelector('#wrap-months-picker');
+
+        const TOTAL_WIDTH = parentEl.offsetWidth;
+        const OWNER_WIDTH = document.querySelector('.triangle-prev').offsetWidth;
+        const OFFSET = OWNER_WIDTH / 2;
+        const MIN_BOUNDARY = -5;
+        const MAX_BOUNDARY = picker.offsetWidth - OFFSET - 1;
+        const ITEM_WIDTH = parentEl.querySelector('.month-item').offsetWidth;
+
+        var startParent = parentEl.clientLeft || 0;
+        var endParent = startParent + TOTAL_WIDTH;
+        var monthItems = parentEl.querySelectorAll('.month-item');
+
+        var Init = function () {
+            /* constructor */
+            this.start = picker.getAttribute('start') || monthItems[0].getAttribute('data-month');
+            this.end = picker.getAttribute('end') || monthItems[11].getAttribute('data-month');
+            this.startX = 0;
+            this.initialMouseX = 0;
+            this.prev = 0;
+            this.next = 0;
+        };
+
+        /*CASE DEFAULT*/
+        Init.prototype.default = function () {
+            var _ = this;
+            if(_.start && _.end) {
+                _.findFirstPosition();
+
+                parentEl.querySelector('.triangle-next').style.left = (_.next * ITEM_WIDTH) - OFFSET + 'px';
+                parentEl.querySelector('.triangle-prev').style.left = (_.prev * ITEM_WIDTH) - OFFSET + 'px';
+
+                monthItems.forEach((item, i) => {
+                    if(i >= _.prev && i < _.next) {
+                        item.style.color = '#FFFFFF';
+                        item.style.backgroundColor = '#2E5670';
+                    }
+                });
+                
+            } else {
+                parentEl.querySelector('.triangle-next').style.left = MAX_BOUNDARY + 'px';
+                parentEl.querySelector('.triangle-prev').style.left = MIN_BOUNDARY + 'px';
+
+                monthItems.forEach((item, i) => {
+                    item.style.color = '#FFFFFF';
+                    item.style.backgroundColor = '#2E5670';
+                });
+            }
+            _.setInputValue();
+        };
+
+        Init.prototype.findFirstPosition = function() {
+            var _ = this;
+            monthItems.forEach((item, i) => {
+                if(parseInt(item.getAttribute('data-month')) == parseInt(_.start)) {
+                    _.prev = i;
+                }
+                if(parseInt(item.getAttribute('data-month')) == parseInt(_.end)) {
+                    _.next = i + 1;
+                }
+            });
+        }
+
+        Init.prototype.helperEvent = function (el, e) {
+            var _ = this;
+            _.startX = el.offsetLeft;
+            _.initialMouseX = e.clientX;
+
+            document.addEventListener('mousemove', mouseMove);
+            document.addEventListener('mouseup', mouseUp);
+
+            function mouseMove(e) {
+                var pointStart = document.querySelector('.triangle-prev').offsetLeft;
+                var pointEnd = document.querySelector('.triangle-next').offsetLeft;
+                var distancePoint = pointEnd - pointStart;
+
+                var activeStart = Math.round(parseInt(document.querySelector('.triangle-prev').style.left + OFFSET) / ITEM_WIDTH);
+                activeStart = Math.abs(activeStart) + 1;
+                var activeEnd = Math.round(parseInt(document.querySelector('.triangle-next').style.left + OFFSET) / ITEM_WIDTH);
+                
+                /*Check the starting point*/
+                if (el.offsetLeft < startParent - OFFSET) {
+                    document.removeEventListener('mousemove', mouseMove);
+                    el.style.left = MIN_BOUNDARY + 'px';
+                    monthItems[0].style.color = '#FFFFFF';
+                    monthItems[0].style.backgroundColor = '#2E5670';
+                    activeStart = 1;
+                    return false;
+                }
+
+                /*check the ending point*/
+                if (el.offsetLeft > endParent - OFFSET) {
+                    document.removeEventListener('mousemove', mouseMove);
+                    el.style.left = MAX_BOUNDARY + 'px';
+                    activeEnd = 12;
+                    return false;
+                }
+
+                /*check distance between triangle left and right*/
+                if (distancePoint <= OWNER_WIDTH && el == parentEl.querySelector('.triangle-prev')) {
+                    document.removeEventListener('mousemove', mouseMove);
+                    let index = Math.round((parseInt(parentEl.querySelector('.triangle-next').style.left) * 12) / TOTAL_WIDTH);
+                    el.style.left = ((index - 1) * ITEM_WIDTH) - OFFSET + 'px';
+                    monthItems[index - 1].style.color = '#FFFFFF';
+                    monthItems[index - 1].style.backgroundColor = '#2E5670';
+                    activeStart = activeEnd;
+                    return false;
+                }
+
+                if (distancePoint <= OWNER_WIDTH && el == parentEl.querySelector('.triangle-next')) {
+                    document.removeEventListener('mousemove', mouseMove);
+                    let index = Math.round((parseInt(parentEl.querySelector('.triangle-prev').style.left) * 12) / TOTAL_WIDTH);
+                    el.style.left = ((index + 1) * ITEM_WIDTH) - OFFSET + 'px';
+                    monthItems[index].style.color = '#FFFFFF';
+                    monthItems[index].style.backgroundColor = '#2E5670';
+                    activeEnd = activeStart;
+                    return false;
+                }
+
+                /*get coordinate X*/
+                let dx = e.clientX - _.initialMouseX;
+                if (dx >= (endParent - OFFSET)) {
+                    dx = MAX_BOUNDARY;
+                }
+
+                el.style.left = ((Math.round(((_.startX + dx) * 12) / TOTAL_WIDTH) * ITEM_WIDTH) - OFFSET) + 'px';
+                
+                /*update range month*/
+                _.displayValue(activeStart, activeEnd);
+
+                return false;
+            }
+
+            function mouseUp() {
+                document.removeEventListener('mousemove', mouseMove);
+                document.removeEventListener('mouseup', mouseUp);
+            }
+        };
+
+        Init.prototype.displayValue = function (displayStart, displayEnd) {
+            var _ = this;
+            parentEl.querySelectorAll('.month-item').forEach((element, i) => {
+                if (i >= displayStart - 1 && i < displayEnd && displayStart <= displayEnd) {
+                    monthItems[i].style.color = '#FFFFFF';
+                    monthItems[i].style.backgroundColor = '#2E5670';
+                } else {
+                    monthItems[i].style.backgroundColor = '#FFFFFF';
+                    monthItems[i].style.color = '#000000';
+                }
+
+                if ((displayStart - 1) === i) {
+                    _.start = element.getAttribute('data-month');
+                }
+                if ((displayEnd - 1) === i) {
+                    _.end = element.getAttribute('data-month');
+                }
+            });
+            _.setInputValue();
+        };
+
+        Init.prototype.setInputValue = function () {
+            var _ = this;
+            document.getElementById('input-start-month').value = _.start;
+            document.getElementById('input-end-month').value = _.end;
+        };
+
+        return Init;
+
+    })();
+
+    const instance = new MonthPicker();
+    instance.default();
+
+    var triangleNext = document.querySelector('.triangle-next');
+    var trianglePrev = document.querySelector('.triangle-prev');
+
+    triangleNext.addEventListener('mousedown', function (e) {
+        instance.helperEvent(triangleNext, e);
+    });
+
+    trianglePrev.addEventListener('mousedown', function (e) {
+        instance.helperEvent(trianglePrev, e);
+    });
+
+    /*END FUNCTION*/
+
+
+</script>
+</body>
+</html>
+
+
+
+

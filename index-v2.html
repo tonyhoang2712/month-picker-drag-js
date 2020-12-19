@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+
+    <title>Hello, world!</title>
+    <style>
+        #wrap-months-picker {
+            position: relative;
+            margin-bottom: 16px;
+            width: 386px;
+            margin-left: 15px;
+            border: 1px solid #A3B9C1;
+        }
+
+        #wrap-months-picker:after,
+        #wrap-months-picker ul#months-picker:after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+
+        #wrap-months-picker ul#months-picker {
+            list-style-type: none;
+            height: auto;
+            width: 384px;
+            display: block;
+            float: left;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #wrap-months-picker ul#months-picker li {
+            display: block;
+            width: 32px;
+            height: 32px;
+            float: left;
+            overflow: hidden;
+            background: #ffffff;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            cursor: pointer;
+        }
+        #wrap-months-picker ul#months-picker li:not(:first-child) {
+            border-left: 1px solid #A3B9C1;
+        }
+
+        #wrap-months-picker ul#months-picker li.active {
+            background-color: #4B7B6E;
+            color: #FFFFFF;
+        }
+
+        #wrap-months-picker ul#months-picker li.active span {
+            color: #ffffff;
+        }
+
+        #wrap-months-picker ul#months-picker li span {
+            display: block;
+            cursor: pointer;
+            height: 100%;
+            line-height: 32px;
+            text-align: center;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            cursor: pointer;
+        }
+
+        #wrap-months-picker .triangle {
+            margin: 0;
+            width: 0;
+            height: 0;
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            border-bottom: 8px;
+            border-bottom-style: solid;
+            border-bottom-color: #2E5670;
+            cursor: move;
+            display: block;
+            position: absolute;
+        }
+
+        #wrap-months-picker .triangle:after {
+            content: '';
+            top: 0;
+            background: transparent;
+            position: absolute;
+            width: 32px;
+            height: 25px;
+            left: -15px;
+        }
+
+        .temp {
+            position: absolute;
+            height: 32px;
+            width: 32px;
+            display: inline-block;
+            background-color: transparent;
+            z-index: 1;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div style="margin-left: 50px">
+        <div class="wrap-months-picker-horizontal" id="wrap-months-picker">
+            <ul class="months-picker-horizontal" id="months-picker" start="4" end="7">
+                
+                <li class="month-item" month="3">
+                    <span>3</span>
+                </li>
+                <li class="month-item" month="4">
+                    <span>4</span>
+                </li>
+                <li class="month-item" month="5">
+                    <span>5</span>
+                </li>
+                <li class="month-item" month="6">
+                    <span>6</span>
+                </li>
+                <li class="month-item" month="7">
+                    <span>7</span>
+                </li>
+                <li class="month-item" month="8">
+                    <span>8</span>
+                </li>
+                <li class="month-item" month="9">
+                    <span>9</span>
+                </li>
+                <li class="month-item" month="10">
+                    <span>10</span>
+                </li>
+                <li class="month-item" month="11">
+                    <span>11</span>
+                </li>
+                <li class="month-item" month="12">
+                    <span>12</span>
+                </li>
+                <li class="month-item" month="1">
+                    <span>1</span>
+                </li>
+                <li class="month-item" month="2">
+                    <span>2</span>
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+    <hr>
+    <br>
+    <br>
+    <input type="text" value="" name="start-month" id="input-start-month">
+    <input type="text" value="" name="end-month" id="input-end-month">
+
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+    <script>
+    /*version 2*/
+    var MonthPicker2 = (function () {
+        const GROUP_PARENT = document.querySelector('#months-picker');
+        const MONTHS_GROUP = GROUP_PARENT.querySelectorAll('.month-item');
+        const TOTAL_WIDTH = GROUP_PARENT.clientWidth;
+        const ITEM_WIDTH = MONTHS_GROUP[0].offsetWidth;
+
+        var Init = function () {
+            this.def = {
+                childNode: document.createElement('span'),
+                start: null,
+                end: null,
+                initialMouseX: 0,
+                move: false
+            };
+        };
+
+        Init.prototype.default = function () {
+            var _ = this;
+            var posStart = parseInt(GROUP_PARENT.getAttribute('start'));
+            var posEnd = parseInt(GROUP_PARENT.getAttribute('end'));
+            
+            if(posStart && posStart) {
+                _.findFirstPosition(posStart, posEnd);
+            } else {
+                _.def.start = 0;
+                _.def.end = 11;
+            }
+            
+            _.display();
+            _.setInputValue(_.def.start, _.def.end);
+        };
+
+        Init.prototype.findFirstPosition = function(posStart, posEnd) {
+            var _ = this;
+            MONTHS_GROUP.forEach((item, i) => {
+                if(parseInt(item.getAttribute('month')) === posStart) {
+                    _.def.start = i;
+                }
+                if(parseInt(item.getAttribute('month')) === posEnd) {
+                    _.def.end = i;
+                }
+            });
+        };
+
+        Init.prototype.funcMouseDown = function (el, i) {
+            var _ = this;
+
+            el.addEventListener('mousedown', function (e) {
+                _.def.start = i;
+                _.def.childNode.classList.add("temp");
+                _.def.childNode.style.left = i * ITEM_WIDTH + 'px';
+                document.getElementById("months-picker").appendChild(_.def.childNode);
+
+                _.def.startX = _.def.childNode.offsetLeft;
+                _.def.initialMouseX = e.clientX;
+
+                _.setInputValue(i, i); //set value when mouse down or first click
+                _.clearActiveItem(i);
+
+                document.addEventListener('mousemove', handleMousemove, false);
+                document.addEventListener('mouseup', handleMouseup, false);
+
+            }, false);
+
+            
+            function handleMousemove(e) {
+                _.def.move = true;
+                var dx = e.clientX - _.def.initialMouseX;
+                var i = Math.floor(Math.abs(dx) / ITEM_WIDTH);
+
+                if (dx <= 0) {
+                    var _offsetLeft = (_.def.start - i) * ITEM_WIDTH;
+
+                    if(_.def.start - i <= 0) {
+                        _.def.end = 0;
+                        _.def.childNode.style.left = 0 + 'px';
+                    } else {
+                        _.def.end = _.def.start - i;
+                        _.def.childNode.style.left = _offsetLeft + 'px';
+                    }
+                }
+                if (dx > 0) {
+                    var _offsetLeft = (_.def.start + i) * ITEM_WIDTH;
+
+                    if(_.def.start + i >= 11) {
+                        _.def.end = 11;
+                        _.def.childNode.style.left = (TOTAL_WIDTH - ITEM_WIDTH) + 'px';
+                    } else {
+                        _.def.end = _.def.start + i
+                        _.def.childNode.style.left = _offsetLeft + 'px';
+                    }
+                }
+                
+                _.display();
+
+                return false;
+            }
+
+            function handleMouseup() {
+                document.getElementById("months-picker").removeChild(_.def.childNode);
+                document.removeEventListener('mousemove', handleMousemove, false);
+                document.removeEventListener('mouseup', handleMouseup, false);
+
+                // set value input after mouse up
+                 _.setInputValueUp(_.def.start, _.def.end);
+                 _.def.move = false;
+            }
+        };
+
+        Init.prototype.clearActiveItem = function (i) {
+            var _ = this;
+            MONTHS_GROUP.forEach((item, index) => {
+                if (index === i) {
+                    _.funcAddActive(item);
+                } else {
+                    _.funcRemoveActive(item);
+                }
+            });
+        };
+
+        Init.prototype.funcAddActive = function (item) {
+            item.classList.add('active');
+        };
+
+        Init.prototype.funcRemoveActive = function (item) {
+            item.classList.remove('active');
+        };
+
+        Init.prototype.display = function () {
+            var _ = this;
+            var arrSort = _.sortStartEnd(_.def.start, _.def.end); 
+            
+            MONTHS_GROUP.forEach((item, i) => {
+                if(arrSort[0] <= i && i <= arrSort[1]) {
+                    _.funcAddActive(item);
+                } else {
+                    _.funcRemoveActive(item);
+                }
+            });
+        };
+
+        Init.prototype.setInputValue = function (_start, _end) {
+            var _ = this;
+            if(_.def.move) { return ; }
+            let startVal = parseInt(MONTHS_GROUP[_start].getAttribute('month'));
+            let endVal = parseInt(MONTHS_GROUP[_end].getAttribute('month'));
+            document.getElementById('input-start-month').value = startVal;
+            document.getElementById('input-end-month').value = endVal;
+        };
+
+        Init.prototype.setInputValueUp = function (_start, _end) {
+            var _ = this;
+            if(!_.def.move) { return ; }
+            var _ = this;
+            let arrSort = _.sortStartEnd(_start, _end); 
+            let startVal = parseInt(MONTHS_GROUP[arrSort[0]].getAttribute('month'));
+            let endVal = parseInt(MONTHS_GROUP[arrSort[1]].getAttribute('month'));
+            document.getElementById('input-start-month').value = startVal;
+            document.getElementById('input-end-month').value = endVal;
+        };
+
+        Init.prototype.sortStartEnd = function (start, end) {
+            var i = start, j = end;
+            if(start > end) {
+                i = end;
+                j = start;
+            }
+
+            return [i, j];
+        };
+
+        Init.prototype.selecteAll = function () {
+            var _ = this;
+            _.def.start = 0;
+            _.def.end = 11;
+            _.display();
+            _.setInputValue(0, 11);
+        };
+        
+        return Init;
+
+    })();
+
+    const classMonth = new MonthPicker2();
+    classMonth.default();
+    var items = document.querySelectorAll('.month-item');
+    var allMonth = document.querySelector('#wrap-months-picker .all');
+
+    for (var i = 0; i < items.length; i++) {
+        classMonth.funcMouseDown(items[i], i);
+    }
+    /*END FUNCTION*/
+
+
+</script>
+</body>
+</html>
+
+
+
+
